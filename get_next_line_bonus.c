@@ -1,36 +1,52 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: alde-oli <alde-oli@student.42lausanne.c    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/17 15:55:49 by alde-oli          #+#    #+#             */
-/*   Updated: 2023/10/17 22:24:34 by alde-oli         ###   ########.fr       */
+/*   Updated: 2023/10/17 22:46:29 by alde-oli         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 char	*get_next_line(int fd)
 {
-	static t_file	f;
+	static t_file	files[MAX_FILES];
+	t_file			*f;
 	char			*line;
 
-	if (BUFFER_SIZE < 1 || fd < 0)
+	f = ft_find_file(files, fd);
+	if (BUFFER_SIZE < 1 || fd < 0 || !f)
 		return (NULL);
-	if (fd != f.fd)
-	{
-		if (f.buf)
-			free(f.buf);
-		f.fd = fd;
-	}
-	f.buf = ft_read_line(f.buf, fd);
-	if (!f.buf)
+	f->buf = ft_read_line(f->buf, fd);
+	if (!f->buf)
 		return (NULL);
-	line = ft_crop_buf(f.buf);
-	f.buf = ft_get_cropped(f.buf);
+	line = ft_crop_buf(f->buf);
+	f->buf = ft_get_cropped(f->buf);
 	return (line);
+}
+
+t_file	*ft_find_file(t_file *files, int fd)
+{
+	int		i;
+
+	i = 0;
+	while (i < MAX_FILES && files[i].is_init)
+	{
+		if (files[i].fd == fd)
+			return (&files[i]);
+		i++;
+	}
+	if (i < MAX_FILES)
+	{
+		files[i].fd = fd;
+		files[i].is_init = 1;
+		return (&files[i]);
+	}
+	return (NULL);
 }
 
 char	*ft_read_line(char *buf, int fd)
